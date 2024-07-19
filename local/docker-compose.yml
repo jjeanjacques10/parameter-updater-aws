@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    restart: on-failure
+    environment:
+      - AWS_DEFAULT_REGION=us-west-1
+      - EDGE_PORT=4566
+      - SERVICES=ssm
+      - HOSTNAME=localhost
+      - HOSTNAME_EXTERNAL=localhost
+    ports:
+      - '4566:4566'
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - ./:/docker-entrypoint-initaws.d/
+
