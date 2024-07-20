@@ -1,13 +1,19 @@
+import os
+
 import boto3
 import botocore
 from botocore.config import Config
 
+ENVIRONMENT = os.getenv('ENVIRONMENT')
+
 
 class SSMService:
     def __init__(self, parameter_store_name=None):
+        # TODO: delete
+        print("😎👀✨ ENVIRONMENT: ", ENVIRONMENT)
         self.ssm = boto3.client(
             'ssm',
-            endpoint_url='http://localstack:4566',  # LocalStack endpoint
+            endpoint_url='http://localstack:4566' if ENVIRONMENT == 'local' else None,  # LocalStack endpoint
             region_name='us-east-1',  # The region specified in your docker-compose.yml
             aws_access_key_id='admin',  # LocalStack uses 'admin' for both access key and secret key
             aws_secret_access_key='admin',
@@ -26,7 +32,6 @@ class SSMService:
             print(e)
             # throw exception error
             raise e
-
 
     def update_parameter_store_value(self, parameters):
         try:

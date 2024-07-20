@@ -1,10 +1,17 @@
-import logging
-import json
+import json, re
 
-from app.ssm_service import SSMService
+from ssm_service import SSMService
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-ssm_service = SSMService('/dev/onepiece-app/env')
+ssm_service = SSMService()
+
+
+def get_delimiter(parameters):
+    pattern = r'[;,]'
+    match = re.search(pattern, parameters)
+
+    if not match:
+        raise Exception('Delimiter not found')
+    return match.group()
 
 
 def lambda_handler(event, context):
@@ -13,20 +20,23 @@ def lambda_handler(event, context):
         body = json.loads(event['body'])
         field = body['field']
         new_value = body['value']
+        ssm_service.parameter_store_name = body['parameter_store_name']
 
         parameters = ssm_service.get_parameter_store_value()
-        logging.info(parameters)
+        print(parameters)
+
+        delimiter = get_delimiter(parameters)
 
         new_parameters = []
-        for param in parameters.split(';'):
+        for param in parameters.split(delimiter):
             parameters = param.split('=')
             if parameters[0] == field:
-                logging.info(f'Updating {field} to {new_value}')
+                print(f'Updating {field} to {new_value}')
                 parameters[1] = new_value
             new_parameters.append('='.join(parameters))
 
-        parameters = ';'.join(new_parameters)
-        logging.info(parameters)
+        parameters = delimiter.join(new_parameters)
+        print(parameters)
 
         ssm_service.update_parameter_store_value(parameters)
 
@@ -38,7 +48,7 @@ def lambda_handler(event, context):
             })
         }
     except Exception as e:
-        logging.error(f"Error updating parameters: {str(e)}")
+        print(f"Error updating parameters: {str(e)}")
         return {
             'statusCode': 500,
             'body': json.dumps({

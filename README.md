@@ -36,9 +36,19 @@ curl --request POST \
   --header 'User-Agent: insomnia/9.3.2' \
   --data '{
 	"field": "TOGGLE_CARDS_OFFLINE",
-	"value": "1000"
+	"value": "1000",
+    "parameter_store_name": "/dev/onepiece-app/env"
 }'
 ```
+
+Response Success Status Code: 200
+
+``` json
+{
+	"message": "Parameters updated successfully",
+	"parameters": "PORT=8080;TIMEOUT_API_REQUEST=1000;TOGGLE_CARDS_OFFLINE=123"
+}
+``` 
 
 ---
 Developed by [Jean Jacques Barros](https://github.com/jjeanjacques10)
