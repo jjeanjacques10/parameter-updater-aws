@@ -1,8 +1,11 @@
+import logging
 import json
 
-from ssm_service import SSMService
+from app.ssm_service import SSMService
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 ssm_service = SSMService('/dev/onepiece-app/env')
+
 
 def lambda_handler(event, context):
     print(f'Processing event: {event}')
@@ -12,19 +15,18 @@ def lambda_handler(event, context):
         new_value = body['value']
 
         parameters = ssm_service.get_parameter_store_value()
-        print(parameters)
+        logging.info(parameters)
 
         new_parameters = []
         for param in parameters.split(';'):
             parameters = param.split('=')
-            print(f'Validating {parameters[0]}')
             if parameters[0] == field:
-                print(f'Updating {field} to {new_value}')
+                logging.info(f'Updating {field} to {new_value}')
                 parameters[1] = new_value
             new_parameters.append('='.join(parameters))
 
         parameters = ';'.join(new_parameters)
-        print(parameters)
+        logging.info(parameters)
 
         ssm_service.update_parameter_store_value(parameters)
 
@@ -36,7 +38,7 @@ def lambda_handler(event, context):
             })
         }
     except Exception as e:
-        print(e)
+        logging.error(f"Error updating parameters: {str(e)}")
         return {
             'statusCode': 500,
             'body': json.dumps({
