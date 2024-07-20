@@ -2,6 +2,8 @@
 
 This is a simple AWS Lambda function that updates the parameters in the AWS Systems Manager Parameter Store.
 
+<img src="images/update-process.png">
+
 ## How to use
 
 1. Clone the repository
@@ -12,6 +14,10 @@ This is a simple AWS Lambda function that updates the parameters in the AWS Syst
 ## Dependencies
 
 - [boto3](https://pypi.org/project/boto3/)
+- SSM (AWS Systems Manager)
+    - Parameter Store
+- pytest
+- moto
 
 ## Getting Started
 
