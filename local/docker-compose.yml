@@ -6,14 +6,20 @@ services:
     container_name: localstack
     restart: on-failure
     environment:
-      - AWS_DEFAULT_REGION=us-west-1
-      - EDGE_PORT=4566
       - SERVICES=ssm
       - HOSTNAME=localhost
-      - HOSTNAME_EXTERNAL=localhost
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=admin
+      - AWS_DEFAULT_REGION=us-east-1
     ports:
       - '4566:4566'
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - ./:/docker-entrypoint-initaws.d/
+      - ./populate.sh:/etc/localstack/init/ready.d/script.sh
+    networks:
+      - localstack_network
+
+networks:
+  localstack_network:
+    driver: bridge
 

@@ -1,19 +1,46 @@
-import boto3
-import botocore
+import json
+
+from ssm_service import SSMService
+
+ssm_service = SSMService('/dev/onepiece-app/env')
 
 def lambda_handler(event, context):
-   print('Hello World')
-   print(get_parameter_store_value())
+    print(f'Processing event: {event}')
+    try:
+        body = json.loads(event['body'])
+        field = body['field']
+        new_value = body['value']
 
-def get_parameter_store_value():
-   ssm = boto3.client('ssm')
-   try:
-       response = ssm.get_parameter(Name='/dev/onepiece-app/env', WithDecryption=True)
-       return response['Parameter']['Value']
-   except botocore.exceptions.ClientError as e:
-       print(e)
-       return None
+        parameters = ssm_service.get_parameter_store_value()
+        print(parameters)
 
+        new_parameters = []
+        for param in parameters.split(';'):
+            parameters = param.split('=')
+            print(f'Validating {parameters[0]}')
+            if parameters[0] == field:
+                print(f'Updating {field} to {new_value}')
+                parameters[1] = new_value
+            new_parameters.append('='.join(parameters))
 
-if (__name__ == '__main__'):
-   lambda_handler(None, None)
+        parameters = ';'.join(new_parameters)
+        print(parameters)
+
+        ssm_service.update_parameter_store_value(parameters)
+
+        return {
+            'statusCode': 200,
+            'body': json.dumps({
+                'message': 'Parameters updated successfully',
+                'parameters': parameters
+            })
+        }
+    except Exception as e:
+        print(e)
+        return {
+            'statusCode': 500,
+            'body': json.dumps({
+                'message': 'Error updating parameters',
+                'error': str(e)
+            })
+        }
